@@ -18,14 +18,14 @@ using DataMonitoringService.Model;
 
 namespace DataMonitoringService.Services
 {
-    public class Service
+    public class DMService
     {
         private readonly System.Timers.Timer _timer;
         private readonly IProducer _producer;
         private readonly PlcCommunicationService _plcCommunicationService;
 
         private readonly List <CountersState> _previousCounterStates;
-        public Service(IProducer producer, PlcCommunicationService plcCommunicationService) 
+        public DMService(IProducer producer, PlcCommunicationService plcCommunicationService) 
         {
             _producer = producer;
             _plcCommunicationService = plcCommunicationService;
@@ -41,7 +41,7 @@ namespace DataMonitoringService.Services
         }
         public void Start()
         {
-            _plcCommunicationService.OpenCommunication();
+            //_plcCommunicationService.OpenCommunication();
             _producer.OpenCommunication();
             _producer.SendMessage(MessageRouting.LoggerRoutingKey,
                 new LogMessage(DataMonitoringServiceInfo.ServiceName,
@@ -77,7 +77,9 @@ namespace DataMonitoringService.Services
             {
                 
             }
-           
+            MessageBase dbh = new DataBlockHeader(1, 2, 1);
+            _producer.SendMessage(MessageRouting.DataRoutingKey, dbh);
+
         }
         public void Stop()
         {

@@ -17,5 +17,10 @@ namespace MessageModel.Model
             BufferPointer = bufferPointer;
         }
 
+        public override string ToString()
+        {
+            return $"{DB}, {BufferPointer}";
+        }
+
     }
 }

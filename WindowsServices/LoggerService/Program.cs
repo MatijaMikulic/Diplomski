@@ -6,6 +6,7 @@ using MessageBroker.Common.Consumer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using SharedResources;
+using System;
 using TaskLog.Configurations;
 using TaskLog.Contracts;
 using Topshelf;

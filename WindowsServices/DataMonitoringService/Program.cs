@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using PlcCommunication;
 using SharedResources;
+using System;
 using Topshelf;
 using Unity;
 
@@ -31,15 +32,15 @@ namespace DataMonitoringService
             container.RegisterType<PlcCommunicationService, PlcCommunicationService>();
             container.RegisterType<IRabbitMqService, RabbitMqService>();
             container.RegisterType<IProducer, RabbitMqProducer>();
-            container.RegisterInstance<Service>(
-                new Service(container.Resolve<IProducer>(), container.Resolve<PlcCommunicationService>()));
+            container.RegisterInstance<DMService>(
+                new DMService(container.Resolve<IProducer>(), container.Resolve<PlcCommunicationService>()));
 
             var exitCode = HostFactory.Run(x =>
             {
 
-                x.Service<Service>(s =>
+                x.Service<DMService>(s =>
                 {
-                    s.ConstructUsing(service => container.Resolve<Service>());
+                    s.ConstructUsing(service => container.Resolve<DMService>());
                     s.WhenStarted(service => service.Start());
                     s.WhenStopped(service => service.Stop());
                 });

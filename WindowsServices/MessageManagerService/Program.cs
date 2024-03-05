@@ -32,15 +32,15 @@ namespace MessageManagerService
             container.RegisterType<IRabbitMqService, RabbitMqService>();
             container.RegisterType<IProducer, RabbitMqProducer>();
             container.RegisterType<IConsumer,RabbitMqConsumer>();
-            container.RegisterInstance<Service>(
-                new Service(container.Resolve<IProducer>(),container.Resolve<IConsumer>() ,container.Resolve<PlcCommunicationService>()));
+            container.RegisterInstance<MMService>(
+                new MMService(container.Resolve<IProducer>(),container.Resolve<IConsumer>() ,container.Resolve<PlcCommunicationService>()));
 
             var exitCode = HostFactory.Run(x =>
             {
 
-                x.Service<Service>(s =>
+                x.Service<MMService>(s =>
                 {
-                    s.ConstructUsing(service => container.Resolve<Service>());
+                    s.ConstructUsing(service => container.Resolve<MMService>());
                     s.WhenStarted(service => service.Start());
                     s.WhenStopped(service => service.Stop());
                 });

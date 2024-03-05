@@ -13,12 +13,12 @@ using System.Threading.Tasks;
 
 namespace MessageManagerService.Services
 {
-    public class Service
+    public class MMService
     {
         private readonly IProducer _producer;
         private readonly IConsumer _consumer;
         private readonly PlcCommunicationService _plcCommunicationService;
-        public Service(IProducer producer, IConsumer consumer, PlcCommunicationService plcCommunicationService)
+        public MMService(IProducer producer, IConsumer consumer, PlcCommunicationService plcCommunicationService)
         {
             _producer = producer;
             _consumer = consumer;
@@ -37,6 +37,8 @@ namespace MessageManagerService.Services
             await _consumer.ReadMessageFromQueueAsync(MessageRouting.DataQueue, async (body) =>
             {
                 var message = MessageDeserializationUtilities.DeserializeMessage(body);
+                Console.WriteLine(message.ToString());
+
                 //await Task.CompletedTask;
             });
         }
