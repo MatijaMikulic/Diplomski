@@ -34,7 +34,6 @@ namespace MessageBroker.Common
         /// <returns>An instance of IConnection representing the RabbitMQ connection.</returns>
         public IConnection CreateConnection()
         {
-
             ConnectionFactory connectionFactory = new ConnectionFactory()
             {
                 UserName = _configuration.Username,
@@ -42,6 +41,8 @@ namespace MessageBroker.Common
                 HostName = _configuration.HostName,
                 ClientProvidedName = _configuration.ClientProvidedName
             };
+            connectionFactory.RequestedHeartbeat = TimeSpan.FromSeconds(5);
+            connectionFactory.RequestedConnectionTimeout = TimeSpan.FromMinutes(5);
 
             //Receiving data async (for Consumer)
             connectionFactory.DispatchConsumersAsync = true;
@@ -49,7 +50,5 @@ namespace MessageBroker.Common
             var connection = connectionFactory.CreateConnection();
             return connection;      
         }
-
-
     }
 }

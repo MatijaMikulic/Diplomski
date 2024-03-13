@@ -1,15 +1,38 @@
 ﻿using Microsoft.Extensions.Options;
 using S7.Net;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace PlcCommunication
 {
     /// <summary>
     /// Provides functionality related to communication with a PLC (Programmable Logic Controller).
     /// </summary>
-    public class PlcCommunicationService:IDisposable
+    public class PlcCommunicationService:IDisposable,INotifyPropertyChanged
     {
         private readonly PlcCommunicationManager _connectionManager;
         private readonly PlcDataAccess _dataAccess;
+        private bool _isConnected;
+
+        public bool IsConnected
+        {
+            get { return _isConnected; }
+            set 
+            {
+                if (_isConnected != value)
+                {
+                    _isConnected = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName]string? propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
         /// <summary>
         /// Initializes a new instance of the PlcCommunicationService class.
@@ -22,6 +45,7 @@ namespace PlcCommunication
             _connectionManager.InitializeCommunication();
             //_connectionManager.OpenCommunication();
             _dataAccess = new PlcDataAccess(_connectionManager.Plc);
+            _isConnected = false;
         }
 
         /// <summary>
@@ -36,9 +60,30 @@ namespace PlcCommunication
         /// Checks whether the communicator is connected to the PLC.
         /// </summary>
         /// <returns>True if connected; otherwise, false.</returns>
-        public bool IsConnected()
+        public bool IsConnectionActive()
         {
-            return _connectionManager.IsCommunicationReady();
+            PingConnection();
+            // Attempting to read data will automatically set plc.IsConnected to true or false
+            IsConnected = _connectionManager.IsCommunicationReady();
+            return IsConnected;
+        }
+
+        /// <summary>
+        /// Pings connection by attempting to read some data
+        /// </summary>
+        /// <returns>True if data was read successfully; otherwise, false.</returns>
+        private void PingConnection()
+        {
+            try
+            {
+                var data = DataAccess.Read(DataType.DataBlock, 4, 0, VarType.Int, 1);
+                //return data is not null;
+            }
+            catch (PlcException ex)
+            {
+                Console.WriteLine($"Ping failed: {ex.ErrorCode}");
+                //return false;
+            }
         }
 
         /// <summary>

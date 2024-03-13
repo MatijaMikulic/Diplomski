@@ -21,6 +21,7 @@ namespace MessageBroker.Common.Producer
         private readonly Dictionary<string, string> _routingKeyQueueMap;
         private readonly string _exchangeName;
         private IRabbitMqService _rabbitMqService;
+        public event EventHandler<ShutdownEventArgs>? ConnectionShutdown;
 
         /// <summary>
         /// Initializes a new instance of the RabbitMqProducer class.
@@ -39,17 +40,37 @@ namespace MessageBroker.Common.Producer
         /// <summary>
         /// Opens the communication channel by creating connections, declaring exchanges, and setting up queues.
         /// </summary>
-        public void OpenCommunication()
+        public async Task OpenCommunication()
         {
-            _connection = _rabbitMqService.CreateConnection();
-            _model = _connection.CreateModel();
-
-
-            _model.ExchangeDeclare(_exchangeName, ExchangeType.Direct);
-            foreach (var (routingKey, queueName) in _routingKeyQueueMap)
+            const int delaySeconds = 2;
+            while (true)
             {
-                SetupQueue(queueName, routingKey);
+                try
+                {
+                    _connection = _rabbitMqService.CreateConnection();
+                    _model = _connection.CreateModel();
+                    _connection.ConnectionShutdown += connection_ConnectionShutdown;
+
+                    _model.ExchangeDeclare(_exchangeName, ExchangeType.Direct);
+
+                    foreach (var (routingKey, queueName) in _routingKeyQueueMap)
+                    {
+                        SetupQueue(queueName, routingKey);
+                    }
+                    //return Task.CompletedTask;
+                    break;
+                }
+                catch (Exception e)
+                {
+                    //Console.WriteLine(e.ToString());
+                    await Task.Delay(delaySeconds * 1000);
+                }
             }
+        }
+        private void connection_ConnectionShutdown(object? sender, ShutdownEventArgs e)
+        {
+            string reson = e.ToString();
+            ConnectionShutdown?.Invoke(sender,e);
         }
 
         public bool IsConnected()

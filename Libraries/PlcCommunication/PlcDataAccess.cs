@@ -44,6 +44,7 @@ namespace PlcCommunication
         public PlcDataAccess(Plc plc)
         {
             _plc = plc;
+            
         }
 
         /// <summary>

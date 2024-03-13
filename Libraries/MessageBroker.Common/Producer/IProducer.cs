@@ -1,4 +1,5 @@
 ﻿using MessageModel.Model;
+using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,13 +24,20 @@ namespace MessageBroker.Common.Producer
         // <summary>
         /// Opens the communication channel for the producer.
         /// </summary>
-        public void OpenCommunication();
+        public Task OpenCommunication();
 
         /// <summary>
         /// Checks whether the producer is connected to the message queue.
         /// </summary>
         /// <returns>True if connected; otherwise, false.</returns>
         public bool IsConnected();
+
+        /// <summary>
+        /// Event raised when the connection to the message queue is shut down unexpectedly.
+        /// The event handler receives arguments of type ShutdownEventArgs which contain 
+        /// details about the shutdown reason.
+        /// </summary>
+        public event EventHandler<ShutdownEventArgs>? ConnectionShutdown;
 
     }
 }

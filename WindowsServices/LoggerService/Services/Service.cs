@@ -26,7 +26,7 @@ namespace LoggerService.Services
 
         public async Task Start()
         {
-            _consumer.OpenCommunication();
+            await _consumer.OpenCommunication();
 
             ////for sync consumer
             //EventHandler<ReceivedMessageEventArgs> receiverHandler = (sender, args) =>

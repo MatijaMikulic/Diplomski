@@ -13,7 +13,7 @@ namespace PlcCommunication
     public class PlcCommunicationManager
     {
         private readonly PlcConfiguration _plcConfiguration;
-        private Plc _plc;
+        private Plc? _plc;
         private bool _isInitialized;
 
         public PlcCommunicationManager(PlcConfiguration plcConfiguration)
@@ -39,16 +39,21 @@ namespace PlcCommunication
         /// <summary>
         /// Opens communication with the PLC.
         /// </summary>
-        public void OpenCommunication()
+        public Task OpenCommunication()
         {
-            try
+            const int delaySeconds = 2;
+            while (true)
             {
-                _plc.Open();
-            }
-            catch (Exception e)
-            {
-                throw new PlcCommunicationException("Failed to establish communication with PLC.", _plcConfiguration, e);
-
+                try
+                {
+                    _plc.Open();
+                    return Task.CompletedTask;
+                }
+                catch (PlcException e)
+                {
+                    //Console.WriteLine(e.ToString())
+                    Task.Delay(delaySeconds * 1000);
+                }
             }
         }
         /// <summary>
@@ -56,7 +61,7 @@ namespace PlcCommunication
         /// </summary>
         public void CloseCommunication()
         {
-            _plc.Close();
+            _plc?.Close();
         }
 
         /// <summary>
@@ -68,6 +73,6 @@ namespace PlcCommunication
             return _isInitialized && _plc.IsConnected;
         }
 
-        public Plc Plc => _plc;
+        public Plc? Plc => _plc;
     }
 }

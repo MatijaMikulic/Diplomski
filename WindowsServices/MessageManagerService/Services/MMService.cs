@@ -25,10 +25,10 @@ namespace MessageManagerService.Services
             _plcCommunicationService = plcCommunicationService;
         }
 
-        public async void Start()
+        public async Task Start()
         {
-            _producer.OpenCommunication();
-            _consumer.OpenCommunication();  
+            await _producer.OpenCommunication();
+            await _consumer.OpenCommunication();  
             //_producer.SendMessage(MessageRouting.LoggerRoutingKey,
             //    new LogMessage(MessageManagerInfo.ServiceName, 
             //    "Service has started.", 

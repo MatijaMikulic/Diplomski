@@ -41,7 +41,7 @@ namespace DataMonitoringService
                 x.Service<DMService>(s =>
                 {
                     s.ConstructUsing(service => container.Resolve<DMService>());
-                    s.WhenStarted(service => service.Start());
+                    s.WhenStarted(async service => await service.Start());
                     s.WhenStopped(service => service.Stop());
                 });
 

@@ -41,7 +41,7 @@ namespace MessageManagerService
                 x.Service<MMService>(s =>
                 {
                     s.ConstructUsing(service => container.Resolve<MMService>());
-                    s.WhenStarted(service => service.Start());
+                    s.WhenStarted(async service => await service.Start());
                     s.WhenStopped(service => service.Stop());
                 });
 
