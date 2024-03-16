@@ -25,7 +25,7 @@ namespace PlcCommunication
         /// <summary>
         /// Initializes PLC object from configuration
         /// </summary>
-        public void InitializeCommunication()
+        public void InitializePlc()
         {
             _plc = new Plc(
                 Enum.Parse<CpuType>(_plcConfiguration.CpuType),
@@ -39,23 +39,10 @@ namespace PlcCommunication
         /// <summary>
         /// Opens communication with the PLC.
         /// </summary>
-        public Task OpenCommunication()
-        {
-            const int delaySeconds = 2;
-            while (true)
-            {
-                try
-                {
-                    _plc.Open();
-                    return Task.CompletedTask;
-                }
-                catch (PlcException e)
-                {
-                    //Console.WriteLine(e.ToString())
-                    Task.Delay(delaySeconds * 1000);
-                }
-            }
-        }
+        public void OpenCommunication()
+        {  
+            _plc?.Open();
+        } 
         /// <summary>
         /// Closes communication with the PLC.
         /// </summary>

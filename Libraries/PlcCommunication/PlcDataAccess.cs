@@ -64,7 +64,7 @@ namespace PlcCommunication
         /// Reads and processes multiple data items from the PLC to create a list of DataBlockMetaData.
         /// </summary>
         /// <returns>A list of DataBlockMetaData objects containing processed PLC data.</returns>
-        public List<DataBlockMetaData> ReadDBContent()
+        public List<DataBlockMetaData> ReadDBMetaData()
         {
             List<DataBlockMetaData> result = new List<DataBlockMetaData>();
 
@@ -88,7 +88,7 @@ namespace PlcCommunication
         /// Reads and processes multiple data items asynchronously from the PLC to create a list of DataBlockMetaData.
         /// </summary>
         /// <returns>A list of DataBlockMetaData objects containing processed PLC data.</returns>
-        public async Task<List<DataBlockMetaData>> ReadDBContentAsync()
+        public async Task<List<DataBlockMetaData>> ReadDBMetaDataAsync()
         {
             List<DataBlockMetaData> result = new List<DataBlockMetaData>();
 

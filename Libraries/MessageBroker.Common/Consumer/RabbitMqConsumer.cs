@@ -92,8 +92,8 @@ namespace MessageBroker.Common.Consumer
             Dictionary<string, object> args = new Dictionary<string, object>();
             args["x-max-priority"] = 10;
 
-            _model.QueueDeclare(queueName, durable: true, exclusive: false, autoDelete: false, args);
-            _model.QueueBind(queueName, _exchangeName, routingKey);
+            _model?.QueueDeclare(queueName, durable: true, exclusive: false, autoDelete: false, args);
+            _model?.QueueBind(queueName, _exchangeName, routingKey);
         }
 
         /// <summary>

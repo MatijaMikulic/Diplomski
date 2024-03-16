@@ -13,7 +13,31 @@ namespace PlcCommunication
         private readonly PlcCommunicationManager _connectionManager;
         private readonly PlcDataAccess _dataAccess;
         private bool _isConnected;
+        private readonly Heartbeat _heartbeat;
+        private bool _hasHeartbeatStarted;
+        private PlcException? _lastException;
 
+        /// <summary>
+        /// Initializes a new instance of the PlcCommunicationService class.
+        /// </summary>
+        /// <param name="options">The configuration options for the PLC.</param>
+        public PlcCommunicationService(IOptions<PlcConfiguration> options)
+        {
+            var plcConfiguration = options.Value;
+            _connectionManager = new PlcCommunicationManager(plcConfiguration);
+            _connectionManager.InitializePlc();
+            //_connectionManager.OpenCommunication();
+            _dataAccess = new PlcDataAccess(_connectionManager.Plc);
+            _isConnected = true;
+            _hasHeartbeatStarted = false;
+
+            _heartbeat = new Heartbeat(this);
+        }
+
+        /// <summary>
+        /// Indicates whether the communicator is currently connected to the PLC.
+        /// This property is automatically set by Heartbeat.
+        /// </summary>
         public bool IsConnected
         {
             get { return _isConnected; }
@@ -35,25 +59,31 @@ namespace PlcCommunication
         }
 
         /// <summary>
-        /// Initializes a new instance of the PlcCommunicationService class.
+        /// Starts heartbeat to periodically check for plc connectivity.
+        /// Heartbeat performs automatic reconnection.
         /// </summary>
-        /// <param name="options">The configuration options for the PLC.</param>
-        public PlcCommunicationService(IOptions<PlcConfiguration> options)
+        public void Start()
         {
-            var plcConfiguration = options.Value;
-            _connectionManager = new PlcCommunicationManager(plcConfiguration);
-            _connectionManager.InitializeCommunication();
-            //_connectionManager.OpenCommunication();
-            _dataAccess = new PlcDataAccess(_connectionManager.Plc);
-            _isConnected = false;
+            if (!_hasHeartbeatStarted)
+            {
+                _hasHeartbeatStarted = true;
+                _heartbeat.Start();
+            }
         }
 
         /// <summary>
-        /// Opens communication with the PLC.
+        /// Reopens communication with the PLC.
         /// </summary>
-        public void OpenCommunication()
+        public void AttemptReconnection()
         {
-            _connectionManager.OpenCommunication();
+            try
+            {
+                _connectionManager.OpenCommunication();
+            }
+            catch (PlcException e)
+            {
+                _lastException = e;
+            }
         }
 
         /// <summary>
@@ -62,9 +92,9 @@ namespace PlcCommunication
         /// <returns>True if connected; otherwise, false.</returns>
         public bool IsConnectionActive()
         {
-            PingConnection();
+            bool status = PingConnection();
             // Attempting to read data will automatically set plc.IsConnected to true or false
-            IsConnected = _connectionManager.IsCommunicationReady();
+            this.IsConnected = _connectionManager.IsCommunicationReady();
             return IsConnected;
         }
 
@@ -72,17 +102,17 @@ namespace PlcCommunication
         /// Pings connection by attempting to read some data
         /// </summary>
         /// <returns>True if data was read successfully; otherwise, false.</returns>
-        private void PingConnection()
+        private bool PingConnection()
         {
             try
             {
                 var data = DataAccess.Read(DataType.DataBlock, 4, 0, VarType.Int, 1);
-                //return data is not null;
+                return data is not null;
             }
-            catch (PlcException ex)
+            catch (PlcException e)
             {
-                Console.WriteLine($"Ping failed: {ex.ErrorCode}");
-                //return false;
+                //_lastException = e;
+                return false;
             }
         }
 
@@ -91,8 +121,14 @@ namespace PlcCommunication
         /// </summary>
         public PlcDataAccess DataAccess => _dataAccess;
 
+        /// <summary>
+        /// Gets the last thrown Plc exception.
+        /// </summary>
+        public PlcException? LastException => _lastException;
+
         public void Dispose()
         {
+            _heartbeat.Stop();
             _connectionManager.CloseCommunication();
         }
 

@@ -10,7 +10,7 @@ namespace PlcCommunication
     public  class PlcCommunicationException:Exception
     {
         public PlcConfiguration PlcConfiguration { get; }
-        public PlcCommunicationException(string message, PlcConfiguration plcConfiguration, Exception innerException = null)
+        public PlcCommunicationException(string message, PlcConfiguration plcConfiguration, Exception? innerException = null)
         : base(message, innerException)
         {
             PlcConfiguration = plcConfiguration;

@@ -43,20 +43,20 @@ namespace DataMonitoringService.Services
         public async Task Start()
         {
 
-            _plcCommunicationService.OpenCommunication();
+            _plcCommunicationService.Start();
             _plcCommunicationService.PropertyChanged += LogPlcConnectionChange;
            
             _timer.Start();
-            await _producer.OpenCommunication();
-            _producer.ConnectionShutdown += LogRabbitMqConnectionLoss;
+            //await _producer.OpenCommunication();
+            //_producer.ConnectionShutdown += LogRabbitMqConnectionLoss;
 
-            if (_producer.IsConnected())
-            {
-                _producer.SendMessage(MessageRouting.LoggerRoutingKey,
-                    new LogMessage(DataMonitoringServiceInfo.ServiceName,
-                    "Service has started.",
-                    Severity.Info, 1));
-            }
+            //if (_producer.IsConnected())
+            //{
+            //    _producer.SendMessage(MessageRouting.LoggerRoutingKey,
+            //        new LogMessage(DataMonitoringServiceInfo.ServiceName,
+            //        "Service has started.",
+            //        Severity.Info, 1));
+            //}
         }
 
         //checks counters and buffer pointer 
@@ -64,40 +64,24 @@ namespace DataMonitoringService.Services
         {
             if (_plcCommunicationService.IsConnectionActive())
             {
-                //List<DataBlockMetaData> messages = _plcCommunicationService.DataAccess.ReadDBContent();
-                //for (int i = 0; i < messages.Count; i++)
-                //{
-                //    if (IsMessageReady(messages[i], i))
-                //    {
-                //        //send to message broker
-                //        //_producer.SendMessage(MessageRouting.DataRoutingKey,
-                //        //    new DataBlockHeader(messages[i].DB, messages[i].BufferPointer,1));
-                //        Console.WriteLine($"READY: {messages[i].ChangeCounter},{messages[i].AuxiliaryCounter},{messages[i].BufferPointer}");
-                //        int messageCount = messages[i].DB - _previousCounterStates[i].PreviousBufferPointer;
-                //    }
-                //    else
-                //    {
-                //        Console.WriteLine($"NOT READY: {messages[i].ChangeCounter},{messages[i].AuxiliaryCounter},{messages[i].BufferPointer}");
-                //    }
-                //    UpdatePreviousCounters(messages[i], i);
-                //}
-                Console.WriteLine("Established connection to plc");
-               
-            }
-            else
-            {
-                //connection to plc is lost
-                Console.WriteLine("Lost Connection to plc");
-            }
-            if (_producer.IsConnected())
-            {
-                //Console.WriteLine("Sending data!");
-                //MessageBase dbh = new DataBlockHeader(1, 2, 1);
-                //_producer.SendMessage(MessageRouting.DataRoutingKey, dbh);
-            }
-            else
-            {
-                //Console.WriteLine("Not connected");
+                List<DataBlockMetaData> messages = _plcCommunicationService.DataAccess.ReadDBMetaData();
+                for (int i = 0; i < messages.Count; i++)
+                {
+                    if (IsMessageReady(messages[i], i))
+                    {
+                        //send to message broker
+                        //_producer.SendMessage(MessageRouting.DataRoutingKey,
+                        //    new DataBlockHeader(messages[i].DB, messages[i].BufferPointer,1));
+                        Console.WriteLine($"READY: {messages[i].ChangeCounter},{messages[i].AuxiliaryCounter},{messages[i].BufferPointer}");
+                        int messageCount = messages[i].DB - _previousCounterStates[i].PreviousBufferPointer;
+                    }
+                    else
+                    {
+                        Console.WriteLine($"NOT READY: {messages[i].ChangeCounter},{messages[i].AuxiliaryCounter},{messages[i].BufferPointer}");
+                    }
+                    UpdatePreviousCounters(messages[i], i);
+                }
+
             }
         }
         public void Stop()
@@ -116,7 +100,7 @@ namespace DataMonitoringService.Services
    
         }
 
-        private void LogPlcConnectionChange(object sender, PropertyChangedEventArgs e)
+        private void LogPlcConnectionChange(object? sender, PropertyChangedEventArgs e)
         {
             if(e.PropertyName == nameof(_plcCommunicationService.IsConnected))
             {
@@ -132,7 +116,7 @@ namespace DataMonitoringService.Services
             }
             
         }
-        private void LogRabbitMqConnectionLoss(object sender, ShutdownEventArgs e)
+        private void LogRabbitMqConnectionLoss(object? sender, ShutdownEventArgs e)
         {
             Console.WriteLine("Lost connection to rabbit mq server!");
         }
