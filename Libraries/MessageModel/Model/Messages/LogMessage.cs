@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MessageModel.Model
+namespace MessageModel.Model.Messages
 {
     public enum Severity
     {
@@ -19,7 +19,7 @@ namespace MessageModel.Model
         public DateTime TimeStamp { get; set; }
         public Severity Level { get; set; }
 
-        public LogMessage(string taskName, string message,  Severity level, byte priority, DateTime? timestamp = null)
+        public LogMessage(string taskName, string message, Severity level, byte priority, DateTime? timestamp = null)
             : base(priority, MessageType.LogMessage)
         {
             TaskName = taskName;

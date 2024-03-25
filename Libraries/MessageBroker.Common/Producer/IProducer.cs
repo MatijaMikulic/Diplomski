@@ -1,4 +1,4 @@
-﻿using MessageModel.Model;
+﻿using MessageModel.Model.Messages;
 using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;

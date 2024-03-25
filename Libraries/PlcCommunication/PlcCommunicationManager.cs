@@ -61,5 +61,7 @@ namespace PlcCommunication
         }
 
         public Plc? Plc => _plc;
+
+        public  PlcConfiguration PlcConfiguration => _plcConfiguration;
     }
 }

@@ -13,4 +13,8 @@
     <PackageReference Include="S7netplus" Version="0.20.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\MessageModel\MessageModel.csproj" />
+  </ItemGroup>
+
 </Project>

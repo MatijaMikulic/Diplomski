@@ -1,5 +1,4 @@
-﻿
-using MessageModel.Model;
+﻿using MessageModel.Model.Messages;
 
 namespace TaskLog.Contracts
 {

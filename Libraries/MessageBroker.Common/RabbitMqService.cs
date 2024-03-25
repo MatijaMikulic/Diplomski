@@ -42,7 +42,7 @@ namespace MessageBroker.Common
                 ClientProvidedName = _configuration.ClientProvidedName
             };
             connectionFactory.RequestedHeartbeat = TimeSpan.FromSeconds(5);
-            connectionFactory.RequestedConnectionTimeout = TimeSpan.FromMinutes(5);
+            connectionFactory.RequestedConnectionTimeout = Timeout.InfiniteTimeSpan;//TimeSpan.FromMinutes(5);
 
             //Receiving data async (for Consumer)
             connectionFactory.DispatchConsumersAsync = true;

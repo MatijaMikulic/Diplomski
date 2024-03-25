@@ -1,4 +1,6 @@
-﻿using PlcCommunication.Model;
+﻿using MessageModel.Model.DataBlockModel;
+using PlcCommunication.Constants;
+using PlcCommunication.Model;
 using S7.Net;
 using S7.Net.Types;
 using System;
@@ -17,20 +19,20 @@ namespace PlcCommunication
     {
         private readonly Plc _plc;
 
-        //temporary static lists for testing
-        private static readonly List<DataItem> _changeCounters =
+        //temporary lists for testing
+        private readonly List<DataItem> _changeCounters =
             new List<DataItem>
         {
             new DataItem{ Count=1,DataType=DataType.DataBlock, DB=4,StartByteAdr=0,VarType=VarType.Int},
             new DataItem{ Count=1,DataType=DataType.DataBlock, DB=5,StartByteAdr=0,VarType=VarType.Int}
         };
-        private static readonly List<DataItem> _auxCounters =
+        private readonly List<DataItem> _auxCounters =
             new List<DataItem>
         {
             new DataItem{ Count=1,DataType=DataType.DataBlock, DB=4,StartByteAdr=18,VarType=VarType.Int},
             new DataItem{ Count=1,DataType=DataType.DataBlock, DB=5,StartByteAdr=18,VarType=VarType.Int}
         };
-        private static readonly List<DataItem> _bufferPointers =
+        private readonly List<DataItem> _bufferPointers =
             new List<DataItem>
         {
             new DataItem{ Count=1,DataType=DataType.DataBlock, DB=4,StartByteAdr=2,VarType=VarType.Int},
@@ -115,11 +117,51 @@ namespace PlcCommunication
         }
 
         /// <summary>
+        /// Reads buffer element from Data block
+        /// </summary>
+        /// <returns>A PlcData object containing buffer element.</returns>
+        public PlcData ReadDBContent(short dataBlock, short bufferPointer)
+        {
+            int offset;
+            switch (dataBlock)
+            {
+                case 4:
+                    PlcData l1L2_Example1 = new L1L2_Process();
+                    offset = GetOffset(dataBlock, bufferPointer);
+                    _plc.ReadClass(l1L2_Example1, dataBlock, offset);
+                    return l1L2_Example1;
+                case 5:
+                    PlcData l1L2_Request = new L1L2_Request();
+                    offset = GetOffset(dataBlock, bufferPointer);
+                    _plc.ReadClass(l1L2_Request, dataBlock, offset);
+                    return l1L2_Request;
+                default:
+                    throw new ArgumentException("Unknown data block type.");
+            }          
+        }
+
+        /// <summary>
+        /// Calculates offset for element inside buffer
+        /// </summary>
+        /// <returns>An offset.</returns>
+        private int GetOffset(short dataBlock, short bufferPointer)
+        {
+            switch (dataBlock)
+            {
+                case 4:
+                    return DataBlockInfo.DataOffset + DataBlockInfo.BufferElementOffsetDB4 * (bufferPointer - 1); // -1 in case bufferPointer starts at 1.
+                case 5:
+                    return DataBlockInfo.DataOffset + DataBlockInfo.BufferElementOffsetDB5 * (bufferPointer - 1);
+                default:
+                    throw new ArgumentException("Unknown data block type.");
+            }
+        }
+
+        /// <summary>
         /// Gets the default value for a specified variable type.
         /// </summary>
         public object GetDefaultValueForType(VarType type)
         {
-
             switch (type)
             {
                 case VarType.Bit:

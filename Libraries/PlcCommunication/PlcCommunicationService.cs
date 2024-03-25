@@ -26,7 +26,6 @@ namespace PlcCommunication
             var plcConfiguration = options.Value;
             _connectionManager = new PlcCommunicationManager(plcConfiguration);
             _connectionManager.InitializePlc();
-            //_connectionManager.OpenCommunication();
             _dataAccess = new PlcDataAccess(_connectionManager.Plc);
             _isConnected = true;
             _hasHeartbeatStarted = false;
@@ -125,6 +124,11 @@ namespace PlcCommunication
         /// Gets the last thrown Plc exception.
         /// </summary>
         public PlcException? LastException => _lastException;
+
+        /// <summary>
+        /// Gets the configuration.
+        /// </summary>
+        public PlcConfiguration PlcConfiguration => _connectionManager.PlcConfiguration;
 
         public void Dispose()
         {

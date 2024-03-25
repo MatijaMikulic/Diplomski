@@ -1,4 +1,4 @@
-﻿using MessageModel.Model;
+﻿using MessageModel.Model.Messages;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;

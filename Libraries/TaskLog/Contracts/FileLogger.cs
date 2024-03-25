@@ -1,4 +1,4 @@
-﻿using MessageModel.Model;
+﻿using MessageModel.Model.Messages;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Concurrent;

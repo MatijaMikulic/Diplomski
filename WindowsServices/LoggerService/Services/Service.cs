@@ -1,5 +1,5 @@
 ﻿using MessageBroker.Common.Consumer;
-using MessageModel.Model;
+using MessageModel.Model.Messages;
 using MessageModel.Utilities;
 using Newtonsoft.Json;
 using SharedResources.Constants;

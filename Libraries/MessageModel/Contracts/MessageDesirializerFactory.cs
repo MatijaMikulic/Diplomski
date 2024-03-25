@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MessageModel.Model;
+using MessageModel.Model.Messages;
 
 namespace MessageModel.Contracts
 {
@@ -23,8 +23,10 @@ namespace MessageModel.Contracts
             {
                 case MessageType.LogMessage:
                     return new LogMessageDeserializer();
-                case MessageType.SimpleMessage:
-                    return new SimpleMessageDeserializer();
+                case MessageType.RequestMessage:
+                    return new RequestMessageDeserializer();
+                case MessageType.ProcessMessage:
+                    return new ProcessMessageDeserializer();
                 case MessageType.DataBlockHeader:
                     return new DataBlockHeaderDeserializer();
                 default:

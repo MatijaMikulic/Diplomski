@@ -1,4 +1,5 @@
 ﻿using MessageBroker.Common.Configurations;
+using MessageModel.Model.Messages;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
@@ -97,7 +98,7 @@ namespace MessageBroker.Common.Producer
         /// </summary>
         /// <param name="routingKey">The routing key for the message.</param>
         /// <param name="message">The message to be sent.</param>
-        public void SendMessage(string routingKey, MessageModel.Model.MessageBase message)
+        public void SendMessage(string routingKey, MessageBase message)
         {
             var properties = _model.CreateBasicProperties();
             properties.Persistent = true;

@@ -1,11 +1,12 @@
-﻿namespace MessageModel.Model
+﻿namespace MessageModel.Model.Messages
 {
 
     public enum MessageType
     {
         LogMessage,
-        SimpleMessage,
-        DataBlockHeader
+        DataBlockHeader,
+        RequestMessage,
+        ProcessMessage
     }
     public class MessageBase
     {

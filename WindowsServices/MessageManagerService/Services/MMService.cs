@@ -1,7 +1,7 @@
 ﻿using MessageBroker.Common.Consumer;
 using MessageBroker.Common.Producer;
 using MessageManagerService.Constants;
-using MessageModel.Model;
+using MessageModel.Model.Messages;
 using MessageModel.Utilities;
 using PlcCommunication;
 using SharedResources.Constants;
