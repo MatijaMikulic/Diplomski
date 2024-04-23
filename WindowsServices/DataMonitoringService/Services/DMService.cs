@@ -18,6 +18,8 @@ using System.ComponentModel;
 using MessageModel.Model.Messages;
 using MessageModel.Model.DataBlockModel;
 using MessageModel.Utilities;
+using RabbitMQ.Client.Exceptions;
+using PlcCommunication.Constants;
 
 namespace DataMonitoringService.Services
 {
@@ -26,7 +28,6 @@ namespace DataMonitoringService.Services
         private readonly System.Timers.Timer _timer;
         private readonly IProducer _producer;
         private readonly PlcCommunicationService _plcCommunicationService;
-
         private readonly List <CountersState> _previousCounterStates;
         public DMService(IProducer producer, PlcCommunicationService plcCommunicationService) 
         {
@@ -47,61 +48,93 @@ namespace DataMonitoringService.Services
 
             _plcCommunicationService.Start();
             _plcCommunicationService.PropertyChanged += LogPlcConnectionChange;
-           
-            _timer.Start();
-            //await _producer.OpenCommunication();
-            //_producer.ConnectionShutdown += LogRabbitMqConnectionLoss;
 
-            //if (_producer.IsConnected())
-            //{
-            //    _producer.SendMessage(MessageRouting.LoggerRoutingKey,
-            //        new LogMessage(DataMonitoringServiceInfo.ServiceName,
-            //        "Service has started.",
-            //        Severity.Info, 1));
-            //}
+            if(_plcCommunicationService.IsConnected)
+            {
+                try
+                {
+                    List<DataBlockMetaData> messages = _plcCommunicationService.DataAccess.ReadDBMetaData();
+                }
+                catch (PlcException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+            _timer.Start();
+            await _producer.OpenCommunication();
+            _producer.ConnectionShutdown += LogRabbitMqConnectionLoss;
+
+            if (_producer.IsConnected())
+            {
+                _producer.SendMessage(MessageRouting.LoggerRoutingKey,
+                    new LogMessage(DataMonitoringServiceInfo.ServiceName,
+                    "Service has started.",
+                    Severity.Info, 1));
+            }
         }
 
         //checks counters and buffer pointer 
         private void TimerElapsed(object? sender, ElapsedEventArgs e)
         {
-            if (_plcCommunicationService.IsConnected)
+            if(!_plcCommunicationService.IsConnected)
             {
-                //Attempt to read counters
-                List<DataBlockMetaData> messages = new List<DataBlockMetaData>();
-                try
-                {
-                    messages = _plcCommunicationService.DataAccess.ReadDBMetaData();
-                }
-                catch (PlcException ex)
-                {
-                    Console.WriteLine(ex.Message);
-                    return;
-                }
+                return;
+            }
 
-                for (int i = 0; i < messages.Count; i++)
+            List<DataBlockMetaData> counterStates = new List<DataBlockMetaData>();
+            //Attempt to read counters
+            try
+            {
+                counterStates = _plcCommunicationService.DataAccess.ReadDBMetaData();
+            }
+            catch (PlcException ex)
+            {
+                //Console.WriteLine(ex.Message);
+                return;
+            }
+
+            //check all dbs for potential new data
+            for (int i = 0; i < counterStates.Count; i++)
+            {
+                //if change counter or aux counter changes
+                if (HaveCountersChanged(counterStates[i], i))
                 {
-                    //Check if auxiliary and change counters are same and different than previous values
-                    if (IsMessageReady(messages[i], i))
+                    //number of new messages (e.g. if the previous counter value was 65535 and the current is 0, the total number of new messages to be processed is 1.
+                    int messagesReady = (counterStates[i].AuxiliaryCounter - _previousCounterStates[i].PreviousAuxiliaryCounter + ushort.MaxValue +1 ) % (ushort.MaxValue +1);
+                    //if there are more new messages than the buffer size than set the number of new messages to be equal to BufferSize
+                    //(because the newest messages have overwritten the old ones)
+                    if(messagesReady > DataBlockInfo.BufferSize)
                     {
-                        //send to message broker
-                        //_producer.SendMessage(MessageRouting.DataRoutingKey,
-                        //    new DataBlockHeader(messages[i].DB, messages[i].BufferPointer,1));
-
-                        Console.WriteLine($"READY:{messages[i].DB},{messages[i].ChangeCounter},{messages[i].AuxiliaryCounter},{messages[i].BufferPointer}");
-
-                        //reads buffer element
-                        var data = _plcCommunicationService.DataAccess.ReadDBContent(messages[i].DB, messages[i].BufferPointer);
-                        //creates RabbitMQ message
-                        var message = MessageFactory.CreateMessage(data);
-
-                        Console.WriteLine(message.MessageType);
-
-                        //Checks how many new messages
-                        int messageCount = messages[i].DB - _previousCounterStates[i].PreviousBufferPointer;
+                        messagesReady = DataBlockInfo.BufferSize;
                     }
-                    UpdatePreviousCounters(messages[i], i);
-                }
+                    //if there are any new messages
+                    if(messagesReady >= 1)
+                    {
+                        //find the element of the first added new message
+                        int startPointer = (counterStates[i].BufferPointer - messagesReady + DataBlockInfo.BufferSize) % DataBlockInfo.BufferSize;
+                        for (int j = 0; j < messagesReady; j++)
+                        {
+                            //ensure the pointer is within the size of buffer (e.g. goes from 1 to 5)
+                            int pointer = (startPointer + j + DataBlockInfo.BufferSize) % DataBlockInfo.BufferSize + 1;
 
+                            //create a new message 
+                            DataBlockHeader dbheader = new DataBlockHeader(counterStates[i].DB, (ushort)pointer, 1);
+                            try
+                            {
+                                _producer.SendMessage(MessageRouting.DataRoutingKey, dbheader);
+                            }
+                            catch(RabbitMQClientException ex)
+                            {
+                                Console.WriteLine(ex.ToString());
+                            }
+                            Console.WriteLine($"{counterStates[i].AuxiliaryCounter},{pointer}");
+                        }
+                        Console.WriteLine("-------------------");
+                    }
+
+                }
+                //keep track of the previous counter values
+                UpdatePreviousCounters(counterStates[i], i);
             }
         }
         public void Stop()
@@ -139,21 +172,21 @@ namespace DataMonitoringService.Services
         {
             Console.WriteLine("Lost connection to rabbit mq server!");
         }
-        private bool HaveCountersChanged(short ChangeCounter, short AuxiliaryCounter, int i)
+        private bool HaveCountersChanged(DataBlockMetaData counterState, int i)
         {
-            return ChangeCounter != _previousCounterStates[i].PreviousChangeCounter
-              || AuxiliaryCounter != _previousCounterStates[i].PreviousAuxiliaryCounter;
+            return counterState.ChangeCounter != _previousCounterStates[i].PreviousChangeCounter
+              || counterState.AuxiliaryCounter != _previousCounterStates[i].PreviousAuxiliaryCounter;
         }
-        private void UpdatePreviousCounters(DataBlockMetaData message, int i)
+        private void UpdatePreviousCounters(DataBlockMetaData counterState, int i)
         {
-            _previousCounterStates[i].PreviousChangeCounter = message.ChangeCounter;
-            _previousCounterStates[i].PreviousAuxiliaryCounter = message.AuxiliaryCounter;
-            _previousCounterStates[i].PreviousBufferPointer = message.BufferPointer;
+            _previousCounterStates[i].PreviousChangeCounter = counterState.ChangeCounter;
+            _previousCounterStates[i].PreviousAuxiliaryCounter = counterState.AuxiliaryCounter;
+            _previousCounterStates[i].PreviousBufferPointer = counterState.BufferPointer;
         }
-        private bool IsMessageReady(DataBlockMetaData message, int i)
+        private bool IsMessageReady(DataBlockMetaData counterState, int i)
         {
-            return HaveCountersChanged(message.ChangeCounter,message.AuxiliaryCounter,i)
-                && message.ChangeCounter == message.AuxiliaryCounter;
+            return HaveCountersChanged(counterState, i)
+                && counterState.ChangeCounter == counterState.AuxiliaryCounter;
         }
     }
 }

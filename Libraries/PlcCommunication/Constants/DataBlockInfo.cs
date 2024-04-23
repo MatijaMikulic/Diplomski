@@ -19,5 +19,6 @@ namespace PlcCommunication.Constants
         public const short DB4 = 4;
         public const short DB5 = 5;
 
+        public const short BufferSize = 3;
     }
 }

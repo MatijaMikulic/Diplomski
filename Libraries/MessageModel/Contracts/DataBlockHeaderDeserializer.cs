@@ -19,8 +19,8 @@ namespace MessageModel.Contracts
             string bodyString = Encoding.UTF8.GetString(body);
             var jsonObject = JsonConvert.DeserializeObject<JObject>(bodyString);
 
-            var db = jsonObject["DB"].ToObject<short>();
-            var bufferPointer = jsonObject["BufferPointer"].ToObject<short>();
+            var db = jsonObject["DB"].ToObject<ushort>();
+            var bufferPointer = jsonObject["BufferPointer"].ToObject<ushort>();
             var priority = jsonObject["Priority"].ToObject<byte>();
 
             return new DataBlockHeader(db,bufferPointer, priority);

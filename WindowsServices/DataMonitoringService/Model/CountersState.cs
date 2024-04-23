@@ -8,9 +8,9 @@ namespace DataMonitoringService.Model
 {
     public class CountersState
     {
-        public short PreviousChangeCounter { get; set; }
-        public short PreviousAuxiliaryCounter { get; set; }
-        public short PreviousBufferPointer { get; set; }
+        public ushort PreviousChangeCounter { get; set; }
+        public ushort PreviousAuxiliaryCounter { get; set; }
+        public ushort PreviousBufferPointer { get; set; }
         public CountersState()
         {
             PreviousChangeCounter = 0;

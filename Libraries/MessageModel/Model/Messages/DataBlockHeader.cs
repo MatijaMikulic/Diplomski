@@ -8,9 +8,9 @@ namespace MessageModel.Model.Messages
 {
     public class DataBlockHeader : MessageBase
     {
-        public short DB { get; set; }
-        public short BufferPointer { get; set; }
-        public DataBlockHeader(short db, short bufferPointer, byte priority)
+        public ushort DB { get; set; }
+        public ushort BufferPointer { get; set; }
+        public DataBlockHeader(ushort db, ushort bufferPointer, byte priority)
             : base(priority, MessageType.DataBlockHeader)
         {
             DB = db;

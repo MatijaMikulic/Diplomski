@@ -8,11 +8,11 @@ namespace PlcCommunication.Model
 {
     public class DataBlockMetaData
     {
-        public short ChangeCounter { get; private set; }
-        public short BufferPointer { get; private set; }
-        public short AuxiliaryCounter { get; private set; }
-        public short DB { get; private set; }
-
+        public ushort ChangeCounter { get; private set; }
+        public ushort BufferPointer { get; private set; }
+        public ushort AuxiliaryCounter { get; private set; }
+        public ushort DB { get; private set; }
+        
         public DataBlockMetaData()
         {
             ChangeCounter = 0;
@@ -20,7 +20,7 @@ namespace PlcCommunication.Model
             BufferPointer = 0;
             DB = 0;
         }
-        public DataBlockMetaData(short changeCounter, short auxiliaryCounter, short bufferPointer, short dB)
+        public DataBlockMetaData(ushort changeCounter, ushort auxiliaryCounter, ushort bufferPointer, ushort dB)
         {
             ChangeCounter = changeCounter;
             AuxiliaryCounter = auxiliaryCounter;

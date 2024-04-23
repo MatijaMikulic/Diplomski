@@ -23,20 +23,20 @@ namespace PlcCommunication
         private readonly List<DataItem> _changeCounters =
             new List<DataItem>
         {
-            new DataItem{ Count=1,DataType=DataType.DataBlock, DB=4,StartByteAdr=0,VarType=VarType.Int},
-            new DataItem{ Count=1,DataType=DataType.DataBlock, DB=5,StartByteAdr=0,VarType=VarType.Int}
+            new DataItem{ Count=1,DataType=DataType.DataBlock, DB=4,StartByteAdr=0,VarType=VarType.Word},
+            new DataItem{ Count=1,DataType=DataType.DataBlock, DB=5,StartByteAdr=0,VarType=VarType.Word}
         };
         private readonly List<DataItem> _auxCounters =
             new List<DataItem>
         {
-            new DataItem{ Count=1,DataType=DataType.DataBlock, DB=4,StartByteAdr=18,VarType=VarType.Int},
-            new DataItem{ Count=1,DataType=DataType.DataBlock, DB=5,StartByteAdr=18,VarType=VarType.Int}
+            new DataItem{ Count=1,DataType=DataType.DataBlock, DB=4,StartByteAdr=18,VarType=VarType.Word},
+            new DataItem{ Count=1,DataType=DataType.DataBlock, DB=5,StartByteAdr=18,VarType=VarType.Word}
         };
         private readonly List<DataItem> _bufferPointers =
             new List<DataItem>
         {
-            new DataItem{ Count=1,DataType=DataType.DataBlock, DB=4,StartByteAdr=2,VarType=VarType.Int},
-            new DataItem{ Count=1,DataType=DataType.DataBlock, DB=5,StartByteAdr=2,VarType=VarType.Int}
+            new DataItem{ Count=1,DataType=DataType.DataBlock, DB=4,StartByteAdr=2,VarType=VarType.Word},
+            new DataItem{ Count=1,DataType=DataType.DataBlock, DB=5,StartByteAdr=2,VarType=VarType.Word}
         };
 
         /// <summary>
@@ -76,10 +76,10 @@ namespace PlcCommunication
 
             result = _changeCounters.Zip(_auxCounters, _bufferPointers)
                        .Select(tuple => new DataBlockMetaData(
-                           (short)tuple.First.Value,
-                           (short)tuple.Second.Value,
-                           (short)tuple.Third.Value,
-                           (short)tuple.Item1.DB
+                           (ushort)tuple.First.Value,
+                           (ushort)tuple.Second.Value,
+                           (ushort)tuple.Third.Value,
+                           (ushort)tuple.Item1.DB
                        ))
                        .ToList();
 
@@ -106,10 +106,10 @@ namespace PlcCommunication
 
             result = changeCounters.Zip(auxCounters, bufferPointers)
                 .Select(tuple => new DataBlockMetaData(
-                    (short)tuple.First.Value,
-                    (short)tuple.Second.Value,
-                    (short)tuple.Third.Value,
-                    (short)tuple.First.DB
+                    (ushort)tuple.First.Value,
+                    (ushort)tuple.Second.Value,
+                    (ushort)tuple.Third.Value,
+                    (ushort)tuple.First.DB
                 ))
                 .ToList();
 
